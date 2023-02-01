@@ -1,0 +1,23 @@
+{
+  "name": "img-color-picker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server:dev": "node_modules/.bin/http-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/whereismysoft/img-color-picker.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/whereismysoft/img-color-picker/issues"
+  },
+  "homepage": "https://github.com/whereismysoft/img-color-picker#readme",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

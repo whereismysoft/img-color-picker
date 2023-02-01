@@ -1,0 +1,24 @@
+.zoom_block {
+    border-radius: 50%;
+    overflow: hidden;
+    box-sizing: border-box;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#zoom_pointer {
+    width: 6px;
+    height: 6px;
+    border: 2px solid blue;
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#zoom {
+    border-radius: 50%;
+}
