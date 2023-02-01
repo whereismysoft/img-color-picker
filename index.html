@@ -8,17 +8,17 @@
     <link href="styles.css" rel="stylesheet">
 </head>
 <body>
-    <div class="header">
-        <button><img src="assets/IconColorPicker.svg"></button>
-    </div>
-    <canvas id="cnvs"></canvas>
-    <div class="zoom_block">
-        <!-- <img class="zoom_block_border" src="assets/Selected Color.svg"> -->
+    <div id="zoom_block" class="zoom_block invisible">
         <canvas id="zoom"></canvas>
         <div id="zoom_pointer"></div>
+        <div id="zoom_hex"></div>
     </div>
-    
-    <script>
-    </script>
+    <div class="header">
+        <button id="picker"><img src="assets/IconColorPicker.svg"></button>
+        <div id="hex"></div>
+        <input id="file_input" type="file" />   
+    </div>
+    <canvas id="cnvs"></canvas>
+    <script src="index.js"></script>
 </body>
 </html>

@@ -1,11 +1,23 @@
+html {
+    font-family: monospace;
+}
+
+.header {
+    display: flex;
+    margin-bottom: 12px;
+}
+
 .zoom_block {
+    position: absolute;
     border-radius: 50%;
     overflow: hidden;
     box-sizing: border-box;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    /* display: flex; */
+    width: 80px;
+}
+
+.invisible {
+    display: none;
 }
 
 #zoom_pointer {
@@ -22,3 +34,59 @@
 #zoom {
     border-radius: 50%;
 }
+
+#zoom_hex {
+        background: white;
+        border-radius: 8px;
+        padding: 2px 4px;
+
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        font-size: 8px;
+        transform: translate(-50%, 77%);
+}
+
+
+#file_input {
+    visibility: hidden;
+    margin-left: 30%;
+}
+
+#file_input::before.invisible {
+    visibility: hidden;
+    display: inherit;
+}
+
+#file_input::before {
+    content: 'Select some files';
+    display: inline-block;
+    background: white;
+    border: 1px solid black;
+    border-radius: 3px;
+    padding: 5px 8px;
+    outline: none;
+    white-space: nowrap;
+    -webkit-user-select: none;
+    cursor: pointer;
+    text-shadow: 1px 1px #fff;
+    font-weight: 700;
+    font-size: 10pt;
+    visibility: visible;
+  }
+
+  #picker:hover, #file_input:hover::before {
+    background: #cbcbcb4a;
+  }
+
+  #picker {
+    background: white;
+    border: 1px solid black;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+
+  #hex {
+    margin-left: 50%;
+    transform: translateX(-50%);
+  }

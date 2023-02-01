@@ -1,7 +1,15 @@
 { 
-    const ZOOM_CANVAS_RADIUS = 40
+    const ZOOM_CANVAS_RADIUS = 40;
     const ZOOM_AREA_SIZE = 4;
 
+    const canvas = document.getElementById('cnvs');
+    const zoomBlock = document.getElementById("zoom_block")
+    const zoomBlockCanvas = document.getElementById("zoom");
+    const imgInput = document.getElementById('file_input');
+    const picker = document.getElementById('picker');
+    const zoomHexText = document.getElementById('zoom_hex');
+    const hexText = document.getElementById('hex');
+    
     function rgba2hex(data) {
         let alpha = data[3] / 255 || 01,
             hex =
@@ -12,20 +20,21 @@
         alpha = ((alpha * 255) | 1 << 8).toString(16).slice(1)
         hex = hex + alpha;
 
-        return hex;
+        return hex.toString();
     }
 
     class ImageDrawer {
         constructor(img, imageCanvasBlock, zoomBlock, zoomCanvasRadius, zoomAreaSize) {
             const {width, height} = this.calculateImageSizes(img);
-
             this.image = img;
 
             this.canvasImageWidth = width;
             this.canvasImageHeight = height;
-
+            
             this.imgCanvas = imageCanvasBlock;
             this.imgCanvasCtx = imageCanvasBlock.getContext("2d");
+
+            this.canvasOffset
 
             this.zoomBlock = zoomBlock;
             this.zoomBlockCtx = zoomBlock.getContext("2d", { willReadFrequently: true });
@@ -42,83 +51,120 @@
 
             return {width, height}
         }
+
+        getDropperColor = () => {
+            const pixel = this.zoomBlockCtx.getImageData(this.zoomBlockRadius, this.zoomBlockRadius, this.zoomedAreaSize, this.zoomedAreaSize);
+            const hexColor = rgba2hex(pixel.data);
+
+            hexText.innerText = '#' + hexColor;
+        }
+
+        setImageSmoothing = (status = false) => {
+            const smoothingProperties = ['imageSmoothingEnabled', 'mozImageSmoothingEnabled', 'webkitImageSmoothingEnabled', 'msImageSmoothingEnabled']
+            smoothingProperties.forEach( smoothing => this.zoomBlockCtx[smoothing] = status)
+        }
         
         startDraw = () => {
             this.imgCanvas.width = this.canvasImageWidth;
             this.imgCanvas.height = this.canvasImageHeight;
+
+            this.canvasOffset = this.imgCanvas.getBoundingClientRect();
 
             this.zoomBlock.width = this.zoomBlockDiameter;
             this.zoomBlock.height = this.zoomBlockDiameter;
 
             this.imgCanvasCtx.drawImage(this.image, 0, 0, this.canvasImageWidth, this.canvasImageHeight);
 
-            this.zoomBlockCtx.imageSmoothingEnabled = true;
-            this.zoomBlockCtx.mozImageSmoothingEnabled = false;
-            this.zoomBlockCtx.webkitImageSmoothingEnabled = false;
-            this.zoomBlockCtx.msImageSmoothingEnabled = false;
-
-            this.imgCanvas.addEventListener("mousemove", (event) => {
-                const {layerX, layerY} = event
-
-                
-                this.drawZoom(layerX, layerY);
-            });
+            this.setImageSmoothing(true)
         }
 
-        drawZoom = (x, y) => {
-            this.zoomBlockCtx.fillStyle = "white";
-            this.zoomBlockCtx.fillRect(0, 0, this.zoomBlockDiameter, this.zoomBlockDiameter);
+        drawEmptyDropper() {
+            this.zoomBlockCtx.fillStyle = "white"
+            this.zoomBlockCtx.fillRect(0, 0,this.zoomBlockDiameter,this.zoomBlockDiameter);
+            requestAnimationFrame(() => this.setCircleColor('#D9D9D9'))
+        }
 
-            this.zoomBlockCtx.drawImage(
-                this.imgCanvas,
-                x, y, 
-                // x - (45 + 5),// Math.min(Math.max(0, x)),
-                // y - 10,// Math.min(Math.max(0, y)),
-                8,
-                8,
-                0,
-                0,
-                this.zoomBlockDiameter,
-                this.zoomBlockDiameter
-            );
+        onImageMouseMove = ({pageX, pageY}) => {
+            const isOutsideImage = pageX < this.canvasOffset.x || pageY < this.canvasOffset.y || pageX > this.canvasOffset.right || pageY > this.canvasOffset.bottom;
 
-            requestAnimationFrame(this.setSelectedColor)
+            requestAnimationFrame(() => zoomBlock.style.transform = `translate(${pageX - ZOOM_CANVAS_RADIUS}px, ${pageY - ZOOM_CANVAS_RADIUS}px)`)
+
+            if (isOutsideImage) {
+                this.drawEmptyDropper();
+                return
+            }
+
+            requestAnimationFrame( () => {
+                this.zoomBlockCtx.drawImage(
+                    this.imgCanvas,
+                    Math.min(Math.max(0, pageX - this.canvasOffset.x - 4), this.canvasImageWidth - 8),
+                    Math.min(Math.max(0, pageY - this.canvasOffset.y - 4), this.canvasImageHeight - 8),
+                    8,
+                    8,
+                    0,
+                    0,
+                    this.zoomBlockDiameter,
+                    this.zoomBlockDiameter
+                );
+            })
+
+            requestAnimationFrame(this.setCircleColor)
         };
 
-        setSelectedColor = () => {
+        setCircleColor = (color) => {
+            if (typeof color == 'string') {
+                this.drawCircle(color)
+                return
+            }
             const pixel = this.zoomBlockCtx.getImageData(this.zoomBlockRadius, this.zoomBlockRadius, this.zoomedAreaSize, this.zoomedAreaSize);
             const hexColor = rgba2hex(pixel.data);
-            
-            this.drawCircle(hexColor)
+            zoomHexText.innerText = '#' + hexColor;
 
-            return hexColor;
+            this.drawCircle(`#${hexColor}`)
         }
 
-        drawCircle = (strokeColorNumber) => {
+        drawCircle = (strokeColor) => {
             this.zoomBlockCtx.beginPath();
-            this.zoomBlockCtx.lineWidth = 7;
-            this.zoomBlockCtx.strokeStyle = `#${strokeColorNumber}`
+            this.zoomBlockCtx.lineWidth = 10;
+            this.zoomBlockCtx.strokeStyle = strokeColor
             this.zoomBlockCtx.arc(this.zoomBlockRadius, this.zoomBlockRadius, this.zoomBlockRadius, 0, 2 * Math.PI, false);;
             this.zoomBlockCtx.stroke();
             this.zoomBlockCtx.closePath();
         }
     }
 
-    function make_base() {
-        const image = new Image();
-        image.src = 'assets/1920x1080-4598441-beach-water-pier-tropical-sky-sea-clouds-island-palm-trees.jpg';
 
-        function omImageLoad() {
-            const canvas = document.getElementById('cnvs')
-            const zoomBlock = document.getElementById("zoom")
+    function omImageLoad() {
+        const imgDrawer = new ImageDrawer(this, canvas, zoomBlockCanvas, ZOOM_CANVAS_RADIUS, ZOOM_AREA_SIZE);
+        
+        imgDrawer.startDraw()
 
-            const imgDrawer = new ImageDrawer(this, canvas, zoomBlock, ZOOM_CANVAS_RADIUS, ZOOM_AREA_SIZE);
-            imgDrawer.startDraw()
+        picker.onclick = function() {
+            if (zoomBlock.classList.contains('invisible')) {
+                zoomBlock.classList.remove('invisible');
+                imgDrawer.drawEmptyDropper();
+                document.addEventListener('mousemove', imgDrawer.onImageMouseMove);
+                zoomBlockCanvas.addEventListener('click', imgDrawer.getDropperColor);
+                document.body.style.cursor = 'none';
+            } else {
+                zoomBlock.classList.add('invisible')
+                document.removeEventListener('mousemove', imgDrawer.onImageMouseMove)
+            }
         }
-        // image.src = 'assets/istockphoto-154232673-1024x1024.jpg';
-        image.onload = omImageLoad
     }
 
-    make_base()
+    function onFileInputChange(e) {
+        const [file] = imgInput.files
+
+        if (file) {
+            const image = new Image();
+
+            image.src = URL.createObjectURL(file);
+            image.onload = omImageLoad
+            imgInput.classList.add('invisible')
+        }
+    }
+
+    imgInput.addEventListener('change', onFileInputChange)
 
 }
